@@ -1,6 +1,7 @@
 from model import ml_models
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import pandas as pd
@@ -18,7 +19,7 @@ y = data.iloc[:, -1]
 y = le.fit_transform(y)
 
 # Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 
 # create the decision tree model
 DT_model = ml_models.DecisionTreeModel(X_train, y_train, max_depth=20, criterion='gini', min_samples_split=2)
@@ -28,7 +29,7 @@ DT_model.train()
 
 
 # Create the logistic regression model
-LR_model = ml_models.SimpleLogicalRegression(X_train, y_train)
+LR_model = ml_models.SimpleLogicalRegression(X=X_train, y=y_train, solver='liblinear', max_iter=500)
 
 # Train the model
 LR_model.train()
@@ -70,4 +71,22 @@ ax.legend()
 
 fig.tight_layout()
 
+plt.show()
+
+# add the confusion matrix for the decision tree model
+dt_cm = confusion_matrix(y_test, y_pred_DT)
+sns.heatmap(dt_cm, annot=True, cmap='Blues', fmt='g',
+            xticklabels=['Negative', 'Positive'], yticklabels=['Negative', 'Positive'])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Decision Tree Confusion Matrix')
+plt.show()
+
+# add the confusion matrix for the logistic regression model
+lr_cm = confusion_matrix(y_test, y_pred_LR)
+sns.heatmap(lr_cm, annot=True, cmap='Blues', fmt='g',
+            xticklabels=['Negative', 'Positive'], yticklabels=['Negative', 'Positive'])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Logistic Regression Confusion Matrix')
 plt.show()

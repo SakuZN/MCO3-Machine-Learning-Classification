@@ -20,9 +20,6 @@ y = le.fit_transform(y)
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-y_train = y_train.reshape(y_train.shape[0], 1)
-
-
 # create the decision tree model
 DT_model = ml_models.DecisionTreeModel(X_train, y_train, max_depth=20, criterion='gini', min_samples_split=2)
 
@@ -31,7 +28,7 @@ DT_model.train()
 
 
 # Create the logistic regression model
-LR_model = ml_models.LinearLrModel(X_train, y_train, learning_rate=0.01, num_iterations=1000, print_cost=True)
+LR_model = ml_models.SimpleLogicalRegression(X_train, y_train)
 
 # Train the model
 LR_model.train()

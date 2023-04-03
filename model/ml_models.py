@@ -44,7 +44,6 @@ class LinearLrModel:
 
         return y_pred
 
-
     # calculate the binary cross entropy cost function
     def cost_function(self, h):
         # calculate the cost function
@@ -52,10 +51,25 @@ class LinearLrModel:
         return cost
 
 
+class SimpleLogicalRegression:
+    def __init__(self, X, y):
+        self.X_train = X
+        self.y_train = y
+        self.model = LogisticRegression(random_state=16)
+
+    def train(self):
+        self.model.fit(self.X_train, self.y_train)
+
+    def predict(self, X_test):
+        y_pred = self.model.predict(X_test)
+        return y_pred
+
+
 class DecisionTreeModel:
     def __init__(self, X, y, max_depth=5, criterion='gini', min_samples_split=2):
         self.X_train = X
         self.y_train = y
+        self.y_train = self.y_train.reshape(self.y_train.shape[0], 1)
         self.max_depth = max_depth
         self.criterion = criterion
         self.min_samples_split = min_samples_split

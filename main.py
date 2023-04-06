@@ -7,6 +7,26 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Modify the Hyper parameters
+
+# Modify to change the ratio of training and test data set
+HPtest_size = 0.3
+
+# Modify to change the depth limit for the Decision Tree model
+HPmax_depth = 10
+# Modify the split limit for the Decision Tree model
+HPmin_samples_split = 2
+
+# Modify to change the solver for the Logistic Regression model
+solver_options = ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']
+HPsolver = solver_options[1]
+
+# Modify to change the maximum iteration for Logistic Regression model
+HPmax_iter = 1000
+
+# Modify to change the number of independent features to be selected by RFE
+HPn_features = 8
+
 data = pd.read_csv('dataset/Student-Employability-Datasets.csv')
 data = data.drop(['Name of Student'], axis=1)
 # instantiate label encoder object to encode the target variable
@@ -19,20 +39,21 @@ y = data.iloc[:, -1]
 y = le.fit_transform(y)
 
 # Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-
-# create the decision tree model
-DT_model = ml_models.DecisionTreeModel(X_train, y_train, max_depth=20, criterion='gini', min_samples_split=2)
-
-# Train the model
-DT_model.train()
-
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=HPtest_size, random_state=42)
 
 # Create the logistic regression model
-LR_model = ml_models.SimpleLogicalRegression(X=X_train, y=y_train, solver='liblinear', max_iter=500)
+LR_model = ml_models.SimpleLogicalRegression(X=X_train, y=y_train,
+                                             solver=HPsolver, max_iter=HPmax_iter, n_features=HPn_features)
 
 # Train the model
 LR_model.train()
+
+# create the decision tree model
+DT_model = ml_models.DecisionTreeModel(X_train, y_train, max_depth=HPmax_depth,
+                                       criterion='gini', min_samples_split=HPmin_samples_split, rfecv=LR_model.get_rfe())
+
+# Train the model
+DT_model.train()
 
 # Predict the test data for both models
 y_pred_LR = LR_model.predict(X_test)
@@ -90,3 +111,14 @@ plt.xlabel('Predicted')
 plt.ylabel('Actual')
 plt.title('Logistic Regression Confusion Matrix')
 plt.show()
+
+# Generate graphs for decision tree (Decision Tree visualization and Feature Importance)
+DT_model.generate_decisiontree_graph()
+DT_model.graph_feature_importances()
+
+# Generate graphs for logistic regression (Logistic Regression visualization)
+LR_model.plot_coefficients()
+
+# generate the pairplot for the dataset
+# sns.pairplot(data, hue='CLASS')
+# plt.show()

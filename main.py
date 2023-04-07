@@ -1,9 +1,9 @@
 from model import ml_models
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, \
-    recall_score, f1_score, confusion_matrix, roc_auc_score
+    recall_score, f1_score, confusion_matrix, roc_auc_score, roc_curve
 import seaborn as sns
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 
 # Modify to change the ratio of training and test data set
 HPtest_size = 0.3
+
+# Modify to change the features to be used as independent features
+HPfrom_x = 0  # 0th index as the first feature, from_x is an inclusive index
+HPto_y = 8  # 8th index as the last feature, to_y is an exclusive index
 
 # Modify to change the depth limit for the Decision Tree model
 HPmax_depth = 10
@@ -32,31 +36,46 @@ HPn_features = 8
 HPk_folds = 10
 
 # Modify to change the scoring metric for cross validation
-scoring_metrics = ['accuracy', 'precision', 'recall', 'f1']
+scoring_metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
 HPscoring = scoring_metrics[0]
+
+# Modify whether to standardize the data or not
+HPstandardize = False
+scaler = StandardScaler()
 
 data = pd.read_csv('dataset/Student-Employability-Datasets.csv')
 data = data.drop(['Name of Student'], axis=1)
+
 # instantiate label encoder object to encode the target variable
 le = LabelEncoder()
+
+# Map the target variables appropriately
+data['CLASS'] = data['CLASS'].map({'LessEmployable': 0, 'Employable': 1})
+
 # Get the independent features
-X = data.iloc[:, :-1]
+X = data.iloc[:, HPfrom_x:HPto_y]
+columns = X.columns
+
 # Get the dependent features
 y = data.iloc[:, -1]
+
 # Encode the target variable
 y = le.fit_transform(y)
+
+if (HPstandardize):
+    X = scaler.fit_transform(X)
+    X = pd.DataFrame(X, columns=columns)
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=HPtest_size, random_state=42)
 
 # Create the logistic regression model
 LR_model = ml_models.SimpleLogicalRegression(X=X_train, y=y_train,
-                                             solver=HPsolver, max_iter=HPmax_iter, n_features=HPn_features)
+                                             solver=HPsolver, max_iter=HPmax_iter)
 
 # create the decision tree model
 DT_model = ml_models.DecisionTreeModel(X_train, y_train, max_depth=HPmax_depth,
-                                       criterion='gini', min_samples_split=HPmin_samples_split,
-                                       rfecv=LR_model.get_rfe())
+                                       criterion='gini', min_samples_split=HPmin_samples_split)
 
 # cross validate the models before training
 lr_cv_scores, dt_cv_scores = {}, {}
@@ -66,7 +85,6 @@ for metric in scoring_metrics:
                                                                         DT=DT_model.get_model(),
                                                                         X=X_train, y=y_train,
                                                                         cv=HPk_folds, scoring=metric)
-
 # Train the model
 LR_model.train()
 DT_model.train()
@@ -81,6 +99,8 @@ lr_precision = precision_score(y_test, y_pred_LR)
 lr_recall = recall_score(y_test, y_pred_LR)
 lr_f1 = f1_score(y_test, y_pred_LR)
 lr_cm = confusion_matrix(y_test, y_pred_LR)
+fpr_lr, tpr_lr, threshold_lr = roc_curve(y_test, y_pred_LR)
+lr_roc_auc = roc_auc_score(y_test, y_pred_LR)
 
 # Calculate the scores for Decision Tree
 dt_accuracy = accuracy_score(y_test, y_pred_DT)
@@ -88,6 +108,8 @@ dt_precision = precision_score(y_test, y_pred_DT)
 dt_recall = recall_score(y_test, y_pred_DT)
 dt_f1 = f1_score(y_test, y_pred_DT)
 dt_cm = confusion_matrix(y_test, y_pred_DT)
+fpr_dt, tpr_dt, threshold_dt = roc_curve(y_test, y_pred_DT)
+dt_roc_auc = roc_auc_score(y_test, y_pred_DT)
 
 # Create a boxplot to visualize cross validation scores
 ml_models.visualize_cv_score(lr_cv_scores[HPscoring], dt_cv_scores[HPscoring], HPscoring)
@@ -113,6 +135,16 @@ ax.legend()
 
 fig.tight_layout()
 
+plt.show()
+
+# Plot ROC curves
+plt.plot(fpr_lr, tpr_lr, label=f'Logistic Regression (AUC={lr_roc_auc:.3f})')
+plt.plot(fpr_dt, tpr_dt, label=f'Decision Tree (AUC={dt_roc_auc:.3f})')
+plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Random Guess')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend()
 plt.show()
 
 # add the confusion matrix for the decision tree model

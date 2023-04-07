@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
@@ -20,6 +21,7 @@ class SimpleLogicalRegression:
             self.features = X.columns[self.rfe.support_]  # get the selected features
         else:
             self.X_train = X
+
         self.y_train = y
         self.model = LogisticRegression(random_state=random_state, penalty=penalty,
                                         C=C, solver=solver, max_iter=max_iter)
@@ -53,6 +55,9 @@ class SimpleLogicalRegression:
 
     def get_rfe(self):
         return self.rfe
+
+    def get_model(self):
+        return self.model
 
 
 class DecisionTreeModel:
@@ -109,3 +114,22 @@ class DecisionTreeModel:
                                        special_characters=True)
         graph = graphviz.Source(dot_data)
         graph.render("Decision Tree", view=True)
+
+    def get_model(self):
+        return self.model
+
+
+def get_cv_score(LR, DT, X, y, cv=5, scoring='accuracy'):
+    lr_scores = cross_val_score(LR, X, y, cv=cv, scoring=scoring)
+    dt_scores = cross_val_score(DT, X, y, cv=cv, scoring=scoring)
+    return lr_scores, dt_scores
+
+def visualize_cv_score(LR_score, DT_score, metric):
+    cv_scores = [LR_score, DT_score]
+    labels = ['Logistic Regression', 'Decision Tree']
+    fig, ax = plt.subplots()
+    ax.boxplot(cv_scores)
+    ax.set_xticklabels(labels)
+    ax.set_ylabel('Scores')
+    ax.set_title('Cross Validation Scores using metric: {0}'.format(metric))
+    plt.show()

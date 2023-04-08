@@ -62,7 +62,7 @@ y = data.iloc[:, -1]
 # Encode the target variable
 y = le.fit_transform(y)
 
-if (HPstandardize):
+if HPstandardize:
     X = scaler.fit_transform(X)
     X = pd.DataFrame(X, columns=columns)
 

@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 class SimpleLogicalRegression:
     def __init__(self, X, y, random_state=16, C=1.0,
                  penalty='l2', solver='lbfgs', max_iter=100):
-
         self.X_train = X
         self.y_train = y
         self.model = LogisticRegression(random_state=random_state, penalty=penalty,
@@ -41,7 +40,6 @@ class SimpleLogicalRegression:
 
 class DecisionTreeModel:
     def __init__(self, X, y, max_depth=5, criterion='gini', min_samples_split=2):
-
         self.X_train = X
         self.y_train = y
         self.y_train = self.y_train.reshape(self.y_train.shape[0], 1)
@@ -73,8 +71,8 @@ class DecisionTreeModel:
 
     def generate_decisiontree_graph(self):
         dot_data = export_graphviz(self.model, out_file=None, feature_names=self.X_train.columns,
-                                       class_names=['Employable', 'LessEmployable'], filled=True, rounded=True,
-                                       special_characters=True)
+                                   class_names=['Employable', 'LessEmployable'], filled=True, rounded=True,
+                                   special_characters=True)
         graph = graphviz.Source(dot_data)
         graph.render("Decision Tree", view=True)
 
@@ -86,6 +84,7 @@ def get_cv_score(LR, DT, X, y, cv=5, scoring='accuracy'):
     lr_scores = cross_val_score(LR, X, y, cv=cv, scoring=scoring)
     dt_scores = cross_val_score(DT, X, y, cv=cv, scoring=scoring)
     return lr_scores, dt_scores
+
 
 def visualize_cv_score(LR_score, DT_score, metric):
     cv_scores = [LR_score, DT_score]

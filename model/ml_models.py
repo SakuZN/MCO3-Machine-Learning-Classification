@@ -1,8 +1,8 @@
+import graphviz
+import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
-import graphviz
-import matplotlib.pyplot as plt
 
 
 class SimpleLogicalRegression:

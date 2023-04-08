@@ -1,12 +1,13 @@
-from model import ml_models
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, \
-    recall_score, f1_score, confusion_matrix, roc_auc_score, roc_curve
-import seaborn as sns
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score, \
+    roc_curve
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+from model import ml_models
 
 # Modify the Hyper parameters
 

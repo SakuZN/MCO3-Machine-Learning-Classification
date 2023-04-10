@@ -65,6 +65,32 @@ y = data.iloc[:, -1]
 # Encode the target variable
 y = le.fit_transform(y)
 
+# Calculate the mean, median and standard deviation for each feature
+summary_stats = (X.describe().loc[['mean', 'std']]).T
+medians = X.median()
+summary_stats['median'] = medians
+# Save the summary statistics to a CSV file
+summary_stats.to_csv('summary_stats.csv', index=True)
+
+# Load the summary statistics from the CSV file
+summary_stats = pd.read_csv('summary_stats.csv', index_col=0)
+
+# Create a grouped bar chart showing the mean and median for each feature with error bars for the standard deviation
+plt.figure(figsize=(10, 6))
+bar_width = 0.35
+x = np.arange(len(summary_stats.index))
+
+plt.bar(x - bar_width/2, summary_stats['mean'], width=bar_width, yerr=summary_stats['std'], capsize=5, label='Mean')
+plt.bar(x + bar_width/2, summary_stats['median'], width=bar_width, label='Median')
+
+plt.xticks(x, summary_stats.index, rotation=90)
+plt.subplots_adjust(bottom=0.35)
+plt.xlabel('Features')
+plt.ylabel('Values')
+plt.title('Mean and Median for each Feature with Standard Deviation Error Bars')
+plt.legend()
+plt.show()
+
 if scaler:
     X = scaler.fit_transform(X)
     X = pd.DataFrame(X, columns=columns)

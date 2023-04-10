@@ -38,7 +38,7 @@ scoring_metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
 HPscoring = scoring_metrics[0]
 
 # Modify whether to standardize or normalize the data
-HPscale = 'none'  # options: 'standardize', 'normalize', or None
+HPscale = 'none'  # options: 'standardize', 'normalize', or Nones
 scaler = None
 ########################################################################################################################
 if HPscale == 'standardize':

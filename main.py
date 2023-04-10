@@ -5,14 +5,14 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score, \
     roc_curve
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 
 from model import ml_models
 
 # Modify the Hyper parameters
-
+########################################################################################################################
 # Modify to change the ratio of training and test data set
-HPtest_size = 0.3
+HPtest_size = 0.25
 
 # Modify to change the features to be used as independent features
 HPfrom_x = 0  # 0th index as the first feature, from_x is an inclusive index
@@ -30,9 +30,6 @@ HPsolver = solver_options[1]
 # Modify to change the maximum iteration for Logistic Regression model
 HPmax_iter = 1000
 
-# Modify to change the number of independent features to be selected by RFE
-HPn_features = 8
-
 # Modify to change the number of folds for cross validation
 HPk_folds = 10
 
@@ -40,9 +37,14 @@ HPk_folds = 10
 scoring_metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
 HPscoring = scoring_metrics[0]
 
-# Modify whether to standardize the data or not
-HPstandardize = False
-scaler = StandardScaler()
+# Modify whether to standardize or normalize the data
+HPscale = 'none'  # options: 'standardize', 'normalize', or None
+scaler = None
+########################################################################################################################
+if HPscale == 'standardize':
+    scaler = StandardScaler()
+elif HPscale == 'normalize':
+    scaler = MinMaxScaler()
 
 data = pd.read_csv('dataset/Student-Employability-Datasets.csv')
 data = data.drop(['Name of Student'], axis=1)
@@ -63,7 +65,7 @@ y = data.iloc[:, -1]
 # Encode the target variable
 y = le.fit_transform(y)
 
-if HPstandardize:
+if scaler:
     X = scaler.fit_transform(X)
     X = pd.DataFrame(X, columns=columns)
 
@@ -86,6 +88,8 @@ for metric in scoring_metrics:
                                                                         DT=DT_model.get_model(),
                                                                         X=X_train, y=y_train,
                                                                         cv=HPk_folds, scoring=metric)
+
+
 # Train the model
 LR_model.train()
 DT_model.train()
@@ -116,9 +120,9 @@ dt_roc_auc = roc_auc_score(y_test, y_pred_DT)
 ml_models.visualize_cv_score(lr_cv_scores[HPscoring], dt_cv_scores[HPscoring], HPscoring)
 
 # Create a bar chart to compare the two models
-labels = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
-logistic_scores = [lr_accuracy, lr_precision, lr_recall, lr_f1]
-decision_tree_scores = [dt_accuracy, dt_precision, dt_recall, dt_f1]
+labels = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC']
+logistic_scores = [lr_accuracy, lr_precision, lr_recall, lr_f1, lr_roc_auc]
+decision_tree_scores = [dt_accuracy, dt_precision, dt_recall, dt_f1, dt_roc_auc]
 
 x = np.arange(len(labels))  # the label locations
 width = 0.35  # the width of the bars
@@ -174,6 +178,7 @@ LR_model.plot_coefficients()
 # generate the pairplot for the dataset
 # sns.pairplot(data, hue='CLASS')
 # plt.show()
+
 
 # Finally, create a DataFrame to store and output the results in a csv file
 results_df = pd.DataFrame({

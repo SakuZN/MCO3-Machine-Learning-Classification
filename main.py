@@ -2,10 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score, \
-    roc_curve
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, \
+    precision_score, recall_score, roc_auc_score, roc_curve
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import TomekLinks
 
 from model import ml_models
 
@@ -38,13 +42,28 @@ scoring_metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
 HPscoring = scoring_metrics[0]
 
 # Modify whether to standardize or normalize the data
-HPscale = 'none'  # options: 'standardize', 'normalize', or Nones
-scaler = None
+HPscale = ['standardize', 'normalize', None]
+scaler = HPscale[2]
+
+# Modify for resampling techniques
+resampling_options = ['none', 'SMOTE', 'TomekLinks', 'RandomUnderSampler', 'RandomOverSampler']
+HPresampling = resampling_options[0]
 ########################################################################################################################
-if HPscale == 'standardize':
+# Check if normalization or standardization is required
+if scaler == 'standardize':
     scaler = StandardScaler()
-elif HPscale == 'normalize':
+elif scaler == 'normalize':
     scaler = MinMaxScaler()
+
+# Check if resampling is required
+if HPresampling == 'SMOTE':
+    resampler = SMOTE()
+elif HPresampling == 'TomekLinks':
+    resampler = TomekLinks()
+elif HPresampling == 'RandomUnderSampler':
+    resampler = RandomUnderSampler()
+elif HPresampling == 'RandomOverSampler':
+    resampler = RandomOverSampler()
 
 data = pd.read_csv('dataset/Student-Employability-Datasets.csv')
 data = data.drop(['Name of Student'], axis=1)
@@ -91,12 +110,30 @@ plt.title('Mean and Median for each Feature with Standard Deviation Error Bars')
 plt.legend()
 plt.show()
 
+# Calculate the distribution of the label class
+class_distribution = data['CLASS'].value_counts()
+print(class_distribution)
+print('Proportion of Employable Students: {:.2f}%'.format(class_distribution[1]/len(data)*100))
+print('Proportion of Less Employable Students: {:.2f}%'.format(class_distribution[0]/len(data)*100))
+# Create a bar chart showing the distribution of the label class
+plt.figure(figsize=(10, 6))
+plt.bar(class_distribution.index, class_distribution.values)
+plt.xticks(class_distribution.index, ['Employable', 'LessEmployable'])
+plt.xlabel('Class')
+plt.ylabel('Proportion')
+plt.title('Distribution of the Label Class')
+plt.show()
+
 if scaler:
     X = scaler.fit_transform(X)
     X = pd.DataFrame(X, columns=columns)
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=HPtest_size, random_state=42)
+
+# Check if resampling is required
+if HPresampling != 'none':
+    X_train, y_train = resampler.fit_resample(X_train, y_train)
 
 # Create the logistic regression model
 LR_model = ml_models.SimpleLogicalRegression(X=X_train, y=y_train,

@@ -25,7 +25,7 @@ HPto_y = 8  # 8th index as the last feature, to_y is an exclusive index
 
 # Modify to change the depth limit for the Decision Tree model
 HPmax_depth = 10
-depth_range = range(1, HPmax_depth + 1)
+depth_range = range(1, HPmax_depth + 11)
 # Modify the split limit for the Decision Tree model
 HPmin_samples_split = 2
 

@@ -17,6 +17,7 @@ from model import ml_models
 ########################################################################################################################
 # Modify to change the ratio of training and test data set
 HPtest_size = 0.20
+HPvalidation_size = 0.25
 
 # Modify to change the features to be used as independent features
 HPfrom_x = 0  # 0th index as the first feature, from_x is an inclusive index
@@ -24,6 +25,7 @@ HPto_y = 8  # 8th index as the last feature, to_y is an exclusive index
 
 # Modify to change the depth limit for the Decision Tree model
 HPmax_depth = 10
+depth_range = range(1, HPmax_depth + 1)
 # Modify the split limit for the Decision Tree model
 HPmin_samples_split = 2
 
@@ -132,6 +134,10 @@ if scaler:
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=HPtest_size, random_state=42)
 
+# Split for validation of decision tree model
+# Create a validation dataset from the training data
+_, X_val, _, y_val = train_test_split(X_train, y_train, test_size=HPvalidation_size, random_state=42)
+
 # Check if resampling is required
 if HPresampling != 'none':
     X_train, y_train = resampler.fit_resample(X_train, y_train)
@@ -229,6 +235,35 @@ LR_model.plot_coefficients()
 # generate the pairplot for the dataset
 # sns.pairplot(data, hue='CLASS')
 # plt.show()
+
+# check for underfitting or overfitting max depth for decision tree
+# Create lists to store the training and validation accuracy scores
+train_acc = []
+val_acc = []
+
+# Loop over the max_depth values
+for max_depth in depth_range:
+    # Create a new decision tree model with the current max_depth value
+    clf = ml_models.DecisionTreeModel(X_train, y_train, max_depth=max_depth,
+                                       criterion='gini', min_samples_split=HPmin_samples_split)
+
+    # Train the model on the training data
+    clf.train()
+    # Make predictions on the training and validation data
+    y_train_pred = clf.predict(X_train)
+    y_val_pred = clf.predict(X_val)
+
+    # Calculate and store the accuracy scores
+    train_acc.append(accuracy_score(y_train, y_train_pred))
+    val_acc.append(accuracy_score(y_val, y_val_pred))
+
+# Plot the results
+plt.plot(depth_range, train_acc, label='Training')
+plt.plot(depth_range, val_acc, label='Validation')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
 
 
 # Finally, create a DataFrame to store and output the results in a csv file

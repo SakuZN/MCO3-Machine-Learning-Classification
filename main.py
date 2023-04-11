@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, \
-    precision_score, recall_score, roc_auc_score, roc_curve
+    precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 from imblearn.over_sampling import SMOTE
@@ -38,8 +38,8 @@ HPmax_iter = 1000
 HPk_folds = 10
 
 # Modify to change the scoring metric for cross validation
-scoring_metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
-HPscoring = scoring_metrics[4]
+scoring_metrics = ['accuracy', 'precision', 'recall', 'f1']
+HPscoring = scoring_metrics[3]
 
 # Modify whether to standardize or normalize the data
 HPscale = ['standardize', 'normalize', None]
@@ -47,7 +47,7 @@ scaler = HPscale[2]
 
 # Modify for resampling techniques
 resampling_options = ['none', 'SMOTE', 'TomekLinks', 'RandomUnderSampler', 'RandomOverSampler']
-HPresampling = resampling_options[0]
+HPresampling = resampling_options[2]
 ########################################################################################################################
 
 # Check if normalization or standardization is required
@@ -168,8 +168,6 @@ lr_precision = precision_score(y_test, y_pred_LR)
 lr_recall = recall_score(y_test, y_pred_LR)
 lr_f1 = f1_score(y_test, y_pred_LR)
 lr_cm = confusion_matrix(y_test, y_pred_LR)
-fpr_lr, tpr_lr, threshold_lr = roc_curve(y_test, y_pred_LR)
-lr_roc_auc = roc_auc_score(y_test, y_pred_LR)
 
 # Calculate the scores for Decision Tree
 dt_accuracy = accuracy_score(y_test, y_pred_DT)
@@ -177,16 +175,14 @@ dt_precision = precision_score(y_test, y_pred_DT)
 dt_recall = recall_score(y_test, y_pred_DT)
 dt_f1 = f1_score(y_test, y_pred_DT)
 dt_cm = confusion_matrix(y_test, y_pred_DT)
-fpr_dt, tpr_dt, threshold_dt = roc_curve(y_test, y_pred_DT)
-dt_roc_auc = roc_auc_score(y_test, y_pred_DT)
 
 # Create a boxplot to visualize cross validation scores
 ml_models.visualize_cv_score(lr_cv_scores[HPscoring], dt_cv_scores[HPscoring], HPscoring)
 
 # Create a bar chart to compare the two models
-labels = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC']
-logistic_scores = [lr_accuracy, lr_precision, lr_recall, lr_f1, lr_roc_auc]
-decision_tree_scores = [dt_accuracy, dt_precision, dt_recall, dt_f1, dt_roc_auc]
+labels = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
+logistic_scores = [lr_accuracy, lr_precision, lr_recall, lr_f1]
+decision_tree_scores = [dt_accuracy, dt_precision, dt_recall, dt_f1]
 
 x = np.arange(len(labels))  # the label locations
 width = 0.35  # the width of the bars
@@ -206,15 +202,6 @@ fig.tight_layout()
 
 plt.show()
 
-# Plot ROC curves
-plt.plot(fpr_lr, tpr_lr, label=f'Logistic Regression (AUC={lr_roc_auc:.3f})')
-plt.plot(fpr_dt, tpr_dt, label=f'Decision Tree (AUC={dt_roc_auc:.3f})')
-plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Random Guess')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic (ROC) Curve')
-plt.legend()
-plt.show()
 
 # add the confusion matrix for the decision tree model
 sns.heatmap(dt_cm, annot=True, cmap='Blues', fmt='g',

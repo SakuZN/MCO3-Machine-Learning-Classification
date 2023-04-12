@@ -86,12 +86,24 @@ def get_cv_score(LR, DT, X, y, cv=5, scoring='accuracy'):
     return lr_scores, dt_scores
 
 
-def visualize_cv_score(LR_score, DT_score, metric):
-    cv_scores = [LR_score, DT_score]
-    labels = ['Logistic Regression', 'Decision Tree']
+def visualize_cv_score(LR_score, DT_score, metrics):
+    lr_score = []
+    dt_score = []
+    for metric in metrics:
+        lr_score.append(LR_score[metric])
+        dt_score.append(DT_score[metric])
     fig, ax = plt.subplots()
-    ax.boxplot(cv_scores)
-    ax.set_xticklabels(labels)
+    ax.boxplot(lr_score)
+    ax.set_xticklabels(['Accuracy', 'Precision', 'Recall', 'F1 Score'])
     ax.set_ylabel('Scores')
-    ax.set_title('Cross Validation Scores using metric: {0}'.format(metric))
+    ax.set_title('Cross Validation Scores')
+    ax.legend(['Logistic Regression'])
+    plt.show()
+
+    fig, ax = plt.subplots()
+    ax.boxplot(dt_score)
+    ax.set_xticklabels(['Accuracy', 'Precision', 'Recall', 'F1 Score'])
+    ax.set_ylabel('Scores')
+    ax.set_title('Cross Validation Scores')
+    ax.legend(['Decision Tree'])
     plt.show()

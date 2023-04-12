@@ -183,7 +183,7 @@ dt_f1 = f1_score(y_test, y_pred_DT)
 dt_cm = confusion_matrix(y_test, y_pred_DT)
 
 # Create a boxplot to visualize cross validation scores
-ml_models.visualize_cv_score(lr_cv_scores[HPscoring], dt_cv_scores[HPscoring], HPscoring)
+ml_models.visualize_cv_score(lr_cv_scores, dt_cv_scores, scoring_metrics)
 
 # Create a bar chart to compare the two models
 labels = ['Accuracy', 'Precision', 'Recall', 'F1 Score']

@@ -16,7 +16,7 @@ from model import ml_models
 # Modify the Hyper parameters
 ########################################################################################################################
 # Modify to change the ratio of training and test data set
-HPtest_size = 0.20
+HPtest_size = 0.25
 HPvalidation_size = 0.25
 
 # Modify to change the features to be used as independent features
@@ -41,7 +41,7 @@ HPk_folds = 10
 
 # Modify to change the scoring metric for cross validation
 scoring_metrics = ['accuracy', 'precision', 'recall', 'f1']
-HPscoring = scoring_metrics[3]
+HPscoring = scoring_metrics[0]
 
 # Modify whether to standardize or normalize the data
 HPscale = ['standardize', 'normalize', None]
@@ -49,7 +49,7 @@ scaler = HPscale[2]
 
 # Modify for resampling techniques
 resampling_options = ['none', 'SMOTE', 'TomekLinks', 'RandomUnderSampler', 'RandomOverSampler']
-HPresampling = resampling_options[2]
+HPresampling = resampling_options[0]
 ########################################################################################################################
 
 # Check if normalization or standardization is required

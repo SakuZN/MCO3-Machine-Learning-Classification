@@ -5,11 +5,7 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, \
     precision_score, recall_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import RandomUnderSampler
-from imblearn.over_sampling import RandomOverSampler
-from imblearn.under_sampling import TomekLinks
+from sklearn.preprocessing import LabelEncoder
 
 from model import ml_models
 
@@ -26,12 +22,6 @@ HPto_y = 8  # 8th index as the last feature, to_y is an exclusive index
 # Modify to change the depth limit for the Decision Tree model
 HPmax_depth = 10
 depth_range = range(1, HPmax_depth + 11)
-# Modify the split limit for the Decision Tree model
-HPmin_samples_split = 2
-
-# Modify to change the solver for the Logistic Regression model
-solver_options = ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']
-HPsolver = solver_options[1]
 
 # Modify to change the maximum iteration for Logistic Regression model
 HPmax_iter = 1000
@@ -43,30 +33,7 @@ HPk_folds = 10
 scoring_metrics = ['accuracy', 'precision', 'recall', 'f1']
 HPscoring = scoring_metrics[0]
 
-# Modify whether to standardize or normalize the data
-HPscale = ['standardize', 'normalize', None]
-scaler = HPscale[2]
-
-# Modify for resampling techniques
-resampling_options = ['none', 'SMOTE', 'TomekLinks', 'RandomUnderSampler', 'RandomOverSampler']
-HPresampling = resampling_options[0]
 ########################################################################################################################
-
-# Check if normalization or standardization is required
-if scaler == 'standardize':
-    scaler = StandardScaler()
-elif scaler == 'normalize':
-    scaler = MinMaxScaler()
-
-# Check if resampling is required
-if HPresampling == 'SMOTE':
-    resampler = SMOTE()
-elif HPresampling == 'TomekLinks':
-    resampler = TomekLinks()
-elif HPresampling == 'RandomUnderSampler':
-    resampler = RandomUnderSampler()
-elif HPresampling == 'RandomOverSampler':
-    resampler = RandomOverSampler()
 
 data = pd.read_csv('dataset/Student-Employability-Datasets.csv')
 data = data.drop(['Name of Student'], axis=1)
@@ -102,8 +69,8 @@ plt.figure(figsize=(10, 6))
 bar_width = 0.35
 x = np.arange(len(summary_stats.index))
 
-plt.bar(x - bar_width/2, summary_stats['mean'], width=bar_width, yerr=summary_stats['std'], capsize=5, label='Mean')
-plt.bar(x + bar_width/2, summary_stats['median'], width=bar_width, label='Median')
+plt.bar(x - bar_width / 2, summary_stats['mean'], width=bar_width, yerr=summary_stats['std'], capsize=5, label='Mean')
+plt.bar(x + bar_width / 2, summary_stats['median'], width=bar_width, label='Median')
 
 plt.xticks(x, summary_stats.index, rotation=90)
 plt.subplots_adjust(bottom=0.35)
@@ -116,8 +83,8 @@ plt.show()
 # Calculate the distribution of the label class
 class_distribution = data['CLASS'].value_counts()
 print(class_distribution)
-print('Proportion of Employable Students: {:.2f}%'.format(class_distribution[1]/len(data)*100))
-print('Proportion of Less Employable Students: {:.2f}%'.format(class_distribution[0]/len(data)*100))
+print('Proportion of Employable Students: {:.2f}%'.format(class_distribution[1] / len(data) * 100))
+print('Proportion of Less Employable Students: {:.2f}%'.format(class_distribution[0] / len(data) * 100))
 # Create a bar chart showing the distribution of the label class
 plt.figure(figsize=(10, 6))
 plt.bar(class_distribution.index, class_distribution.values)
@@ -127,9 +94,6 @@ plt.ylabel('Proportion')
 plt.title('Distribution of the Label Class')
 plt.show()
 
-if scaler:
-    X = scaler.fit_transform(X)
-    X = pd.DataFrame(X, columns=columns)
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=HPtest_size, random_state=42)
@@ -138,17 +102,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=HPtest_size,
 # Create a validation dataset from the training data
 _, X_val, _, y_val = train_test_split(X_train, y_train, test_size=HPvalidation_size, random_state=42)
 
-# Check if resampling is required
-if HPresampling != 'none':
-    X_train, y_train = resampler.fit_resample(X_train, y_train)
-
 # Create the logistic regression model
-LR_model = ml_models.SimpleLogicalRegression(X=X_train, y=y_train,
-                                             solver=HPsolver, max_iter=HPmax_iter)
+LR_model = ml_models.SimpleLogicalRegression(X=X_train, y=y_train, max_iter=HPmax_iter)
 
 # create the decision tree model
 DT_model = ml_models.DecisionTreeModel(X_train, y_train, max_depth=HPmax_depth,
-                                       criterion='gini', min_samples_split=HPmin_samples_split)
+                                       criterion='gini')
 
 # cross validate the models before training
 lr_cv_scores, dt_cv_scores = {}, {}
@@ -156,9 +115,8 @@ lr_cv_scores, dt_cv_scores = {}, {}
 for metric in scoring_metrics:
     lr_cv_scores[metric], dt_cv_scores[metric] = ml_models.get_cv_score(LR=LR_model.get_model(),
                                                                         DT=DT_model.get_model(),
-                                                                        X=X_train, y=y_train,
+                                                                        X=X, y=y,
                                                                         cv=HPk_folds, scoring=metric)
-
 
 # Train the model
 LR_model.train()
@@ -208,7 +166,6 @@ fig.tight_layout()
 
 plt.show()
 
-
 # add the confusion matrix for the decision tree model
 sns.heatmap(dt_cm, annot=True, cmap='Blues', fmt='g',
             xticklabels=['Negative', 'Positive'], yticklabels=['Negative', 'Positive'])
@@ -245,7 +202,7 @@ val_acc = []
 for max_depth in depth_range:
     # Create a new decision tree model with the current max_depth value
     clf = ml_models.DecisionTreeModel(X_train, y_train, max_depth=max_depth,
-                                       criterion='gini', min_samples_split=HPmin_samples_split)
+                                      criterion='gini')
 
     # Train the model on the training data
     clf.train()
@@ -264,7 +221,6 @@ plt.xlabel('Max Depth')
 plt.ylabel('Accuracy')
 plt.legend()
 plt.show()
-
 
 # Finally, create a DataFrame to store and output the results in a csv file
 results_df = pd.DataFrame({
@@ -289,3 +245,52 @@ for metric in scoring_metrics:
 results_df.set_index('Model', inplace=True)
 # output the results to a csv file
 results_df.to_csv('model_results.csv')
+
+# Compare the singe train-test split result with the cross validation results
+
+# Create a bar chart to compare the result of logistic regression
+labels = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
+logistic_scores = [lr_accuracy, lr_precision, lr_recall, lr_f1]
+cv_mean_scores = [lr_cv_scores[metric].mean() for metric in scoring_metrics]
+cv_std_scores = [lr_cv_scores[metric].std() for metric in scoring_metrics]
+
+x = np.arange(len(labels))  # the label locations
+width = 0.35  # the width of the bars
+
+fig, ax = plt.subplots()
+rects1 = ax.bar(x - width / 2, logistic_scores, width, label='Single Train-Test Split')
+rects2 = ax.bar(x + width / 2, cv_mean_scores, width, yerr=cv_std_scores, capsize=5, label='Cross Validation')
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel('Scores')
+ax.set_title('Results Comparison for Logistic Regression')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.legend()
+
+fig.tight_layout()
+
+plt.show()
+
+# Create a bar chart to compare the result of decision tree
+labels = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
+decision_tree_scores = [dt_accuracy, dt_precision, dt_recall, dt_f1]
+cv_mean_scores = [dt_cv_scores[metric].mean() for metric in scoring_metrics]
+cv_std_scores = [dt_cv_scores[metric].std() for metric in scoring_metrics]
+
+x = np.arange(len(labels))  # the label locations
+width = 0.35  # the width of the bars
+
+fig, ax = plt.subplots()
+rects1 = ax.bar(x - width / 2, decision_tree_scores, width, label='Single Train-Test Split')
+rects2 = ax.bar(x + width / 2, cv_mean_scores, width, yerr=cv_std_scores, capsize=5, label='Cross Validation')
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel('Scores')
+ax.set_title('Results Comparison for Decision Tree')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.legend()
+
+fig.tight_layout()
+plt.show()

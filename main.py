@@ -70,14 +70,14 @@ bar_width = 0.35
 x = np.arange(len(summary_stats.index))
 
 plt.bar(x - bar_width / 2, summary_stats['mean'], width=bar_width, yerr=summary_stats['std'], capsize=5, label='Mean')
-plt.bar(x + bar_width / 2, summary_stats['median'], width=bar_width, label='Median')
 
 plt.xticks(x, summary_stats.index, rotation=90)
 plt.subplots_adjust(bottom=0.35)
 plt.xlabel('Features')
 plt.ylabel('Values')
-plt.title('Mean and Median for each Feature with Standard Deviation Error Bars')
+plt.title('Mean for each Feature with Standard Deviation Error Bars')
 plt.legend()
+plt.savefig('plot_graphs/mean_std.png')
 plt.show()
 
 # Calculate the distribution of the label class
@@ -92,6 +92,7 @@ plt.xticks(class_distribution.index, ['Employable', 'LessEmployable'])
 plt.xlabel('Class')
 plt.ylabel('Proportion')
 plt.title('Distribution of the Label Class')
+plt.savefig('plot_graphs/class_distribution.png')
 plt.show()
 
 # Split the data into training and testing sets
@@ -163,6 +164,7 @@ ax.legend()
 
 fig.tight_layout()
 
+plt.savefig('plot_graphs/model_comparison.png')
 plt.show()
 
 # add the confusion matrix for the decision tree model
@@ -171,6 +173,7 @@ sns.heatmap(dt_cm, annot=True, cmap='Blues', fmt='g',
 plt.xlabel('Predicted')
 plt.ylabel('Actual')
 plt.title('Decision Tree Confusion Matrix')
+plt.savefig('plot_graphs/decision_tree_cm.png')
 plt.show()
 
 # add the confusion matrix for the logistic regression model
@@ -179,6 +182,7 @@ sns.heatmap(lr_cm, annot=True, cmap='Blues', fmt='g',
 plt.xlabel('Predicted')
 plt.ylabel('Actual')
 plt.title('Logistic Regression Confusion Matrix')
+plt.savefig('plot_graphs/logistic_regression_cm.png')
 plt.show()
 
 # Generate graphs for decision tree (Decision Tree visualization and Feature Importance)
@@ -219,6 +223,7 @@ plt.plot(depth_range, val_acc, label='Validation')
 plt.xlabel('Max Depth')
 plt.ylabel('Accuracy')
 plt.legend()
+plt.savefig('plot_graphs/decision_tree_max_depth.png')
 plt.show()
 
 # Finally, create a DataFrame to store and output the results in a csv file
@@ -269,6 +274,7 @@ ax.legend()
 
 fig.tight_layout()
 
+plt.savefig('plot_graphs/logistic_regression_comparison.png')
 plt.show()
 
 # Create a bar chart to compare the result of decision tree
@@ -292,4 +298,5 @@ ax.set_xticklabels(labels)
 ax.legend()
 
 fig.tight_layout()
+plt.savefig('plot_graphs/decision_tree_comparison.png')
 plt.show()

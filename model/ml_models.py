@@ -32,6 +32,7 @@ class SimpleLogicalRegression:
         plt.xlabel('Features')
         plt.ylabel('Coefficients')
         plt.title('Logistic Regression Coefficients per Feature')
+        plt.savefig('plot_graphs/logistic_regression_coefficients.png')
         plt.show()
 
     def get_model(self):
@@ -67,6 +68,7 @@ class DecisionTreeModel:
         plt.xlabel('Features')
         plt.ylabel('Importance')
         plt.title('Decision Tree Feature Importances')
+        plt.savefig('plot_graphs/decision_tree_feature_importances.png')
         plt.show()
 
     def generate_decisiontree_graph(self):
@@ -74,7 +76,7 @@ class DecisionTreeModel:
                                    class_names=['Employable', 'LessEmployable'], filled=True, rounded=True,
                                    special_characters=True)
         graph = graphviz.Source(dot_data)
-        graph.render("Decision Tree", view=True)
+        graph.render("Decision Tree", view=True, directory='plot_graphs')
 
     def get_model(self):
         return self.model
@@ -98,6 +100,7 @@ def visualize_cv_score(LR_score, DT_score, metrics):
     ax.set_ylabel('Scores')
     ax.set_title('Cross Validation Scores')
     ax.legend(['Logistic Regression'])
+    plt.savefig('plot_graphs/logistic_regression_cv_scores.png')
     plt.show()
 
     fig, ax = plt.subplots()
@@ -106,4 +109,5 @@ def visualize_cv_score(LR_score, DT_score, metrics):
     ax.set_ylabel('Scores')
     ax.set_title('Cross Validation Scores')
     ax.legend(['Decision Tree'])
+    plt.savefig('plot_graphs/decision_tree_cv_scores.png')
     plt.show()

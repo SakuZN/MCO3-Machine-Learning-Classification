@@ -1,0 +1,20 @@
+Before running the code, libraries are needed to be downloaded and imported
+
+Prerequisites
+- Python 3.11
+- Python Interpreter 3.8+
+- Graphviz for windows, https://graphviz.org/download/
+
+This project contains "requirements.txt" file that contains all used libraries.
+
+There are various ways to do so:
+
+1. Pip install via cmd
+
+2. Use the "install_dependencies.bat" file to automatically call pip install
+
+3. Let your chosen IDE (Pycharm for example) install it for you if it has that functionality
+
+HOW TO RUN:
+Simply open main.py and run, it should show all the necessary plots and graphs. 
+However, if chosen IDE does not have Sciview, all the plots and graphs are in folder "plot_graphs"
